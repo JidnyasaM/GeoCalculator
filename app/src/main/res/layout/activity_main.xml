@@ -150,6 +150,7 @@
         android:layout_alignTop="@+id/distance"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="@+id/longitude_p1"
+        app:layout_constraintStart_toEndOf="@+id/distanceAnswer"
         app:layout_constraintTop_toBottomOf="@+id/clear" />
 
     <TextView
@@ -160,6 +161,7 @@
         android:layout_alignTop="@+id/bearing"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="@+id/longitude_p1"
+        app:layout_constraintStart_toEndOf="@+id/bearingAnswer"
         app:layout_constraintTop_toBottomOf="@+id/distanceUnits" />
 
     <android.support.constraint.Guideline

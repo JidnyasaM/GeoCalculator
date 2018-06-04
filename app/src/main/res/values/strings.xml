@@ -6,6 +6,7 @@
     <string name="longitude_p2">Enter longitude for p2</string>
     <string name="calculate">Calculate</string>
     <string name="enterValues">Values missing from the fields!</string>
+    <string name="cannotSave">Enter values to change the units.</string>
     <string name="clear">Clear</string>
     <string name="distance">Distance:</string>
     <string name="bearing">Bearing:</string>
@@ -13,6 +14,10 @@
     <string name="title_activity_settings">MySettingsActivity</string>
     <string name="distunits">Distance Units</string>
     <string name="bearunits">Bearing Units</string>
+    <string name="origin">Origination</string>
+    <string name="destination">Destination</string>
+    <string name="date">Date of Calculation</string>
+    <string name="imageView">Placeholder</string>
     <string-array name="distSpinner">
         <item>Kilometers</item>
         <item>Miles</item>
@@ -21,4 +26,5 @@
         <item>Degrees</item>
         <item>Mils</item>
     </string-array>
+    <string name="title_activity_history">HistoryActivity</string>
 </resources>

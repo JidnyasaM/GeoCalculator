@@ -16,12 +16,19 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.curiosity.jidnyasa.geocalc.dummy.HistoryContent;
+
+import org.joda.time.DateTime;
+
 import java.text.DecimalFormat;
+
+/* GeoCalculator by Jidnyasa Mantri and Geethanjali Sanikommu */
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int Settings_Activity = 1;
-    public static String  distanceUnit = "Kilometers";
+    public static int HISTORY_RESULT = 2;
+    public static String distanceUnit = "Kilometers";
     public static String bearingUnit = "Degrees";
     public Float distanceInKilometers;
     public Float bearingInDegrees;
@@ -47,17 +54,13 @@ public class MainActivity extends AppCompatActivity {
         Button calculate = findViewById(R.id.calculate);
         Button clear = findViewById(R.id.clear);
 
-
         //If calculate is clicked
         calculate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                String lat1 = latitude_p1.getText().toString();
-                String lat2 = latitude_p2.getText().toString();
-                String long1 = longitude_p1.getText().toString();
-                String long2 = longitude_p2.getText().toString();
-                if (lat1.length() == 0 || lat2.length() == 0 || long1.length() == 0 || long2.length() == 0) {
+                if (latitude_p1.length() == 0 || longitude_p1.length() == 0 ||
+                        latitude_p2.length() == 0 || longitude_p2.length() == 0) {
                     //Disappear keypad on button click
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(latitude_p1.getWindowToken(), 0);
@@ -65,31 +68,21 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (lat1.length() != 0 || lat2.length() != 0 || long1.length() != 0 || long2.length() != 0) {
+                if (latitude_p1.length() != 0 || longitude_p1.length() != 0 ||
+                        latitude_p2.length() != 0 || latitude_p2.length() != 0) {
                     //Disappear keypad on button click
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(latitude_p1.getWindowToken(), 0);
                 }
 
-                //Getting the p1 location
-                Location loc1 = new Location("");
-                loc1.setLatitude(Double.parseDouble(latitude_p1.getText().toString()));
-                loc1.setLongitude(Double.parseDouble(longitude_p1.getText().toString()));
-
-                //Getting the p2 location
-                Location loc2 = new Location("");
-                loc2.setLatitude(Double.parseDouble(latitude_p2.getText().toString()));
-                loc2.setLongitude(Double.parseDouble(longitude_p2.getText().toString()));
-
-                //Calculating the distance between p1 and p2
-                Float distanceInMeters = loc1.distanceTo(loc2);
-                distanceInKilometers = distanceInMeters / 1000;
-
-                //Calculating the bearing between p1 and p2
-                bearingInDegrees = loc1.bearingTo(loc2);
-
                 //Setting the answers to the TextViews
                 unitSetter();
+
+                // remember the calculation
+                HistoryContent.HistoryItem item = new HistoryContent.HistoryItem(latitude_p1.getText().toString(),
+                        longitude_p1.getText().toString(),latitude_p2.getText().toString(),
+                        longitude_p2.getText().toString(),DateTime.now());
+                HistoryContent.addItem(item);
             }
         });
 
@@ -119,10 +112,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void unitSetter() {
+        //Text views
         TextView distanceLabel = findViewById(R.id.distanceUnits);
         TextView distanceAns = findViewById(R.id.distanceAnswer);
         TextView bearingLabel = findViewById(R.id.bearingUnit);
         TextView bearingAns = findViewById(R.id.bearingAnswer);
+
+        //EditText
+        final EditText latitude_p1 = findViewById(R.id.latitude_p1);
+        final EditText longitude_p1 = findViewById(R.id.longitude_p1);
+        final EditText latitude_p2 = findViewById(R.id.latitude_p2);
+        final EditText longitude_p2 = findViewById(R.id.longitude_p2);
+
+        //Getting the p1 location
+        Location loc1 = new Location("");
+        loc1.setLatitude(Double.parseDouble(latitude_p1.getText().toString()));
+        loc1.setLongitude(Double.parseDouble(longitude_p1.getText().toString()));
+
+        //Getting the p2 location
+        Location loc2 = new Location("");
+        loc2.setLatitude(Double.parseDouble(latitude_p2.getText().toString()));
+        loc2.setLongitude(Double.parseDouble(longitude_p2.getText().toString()));
+
+        //Calculating the distance between p1 and p2
+        Float distanceInMeters = loc1.distanceTo(loc2);
+        distanceInKilometers = distanceInMeters / 1000;
+
+        //Calculating the bearing between p1 and p2
+        bearingInDegrees = loc1.bearingTo(loc2);
+
 
         if(distanceUnit.equals("Kilometers")) {
             DecimalFormat df = new DecimalFormat("###.##");
@@ -153,9 +171,7 @@ public class MainActivity extends AppCompatActivity {
             bearingAns.setText(bearInMils);
             bearingLabel.setText("Mils");
         }
-
     }
-
 
     //View Settings om Task bar
     @Override
@@ -174,20 +190,46 @@ public class MainActivity extends AppCompatActivity {
                 Intent launchNewIntent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivityForResult(launchNewIntent,Settings_Activity);
                 return true;
+            case R.id.action_history:
+                Intent intent1 = new Intent(MainActivity.this, HistoryActivity.class);
+                startActivityForResult(intent1, HISTORY_RESULT);
+                return true;
         }
         return false;
     }
 
-    //For Distance Spinner
+    //For Distance & Bearing Spinner
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        //EditText
+        EditText latitude_p1 = findViewById(R.id.latitude_p1);
+        EditText longitude_p1 = findViewById(R.id.longitude_p1);
+        EditText latitude_p2 = findViewById(R.id.latitude_p2);
+        EditText longitude_p2 = findViewById(R.id.longitude_p2);
+
         if (requestCode == Settings_Activity) {
             if(resultCode == RESULT_OK) {
                 //do unit switch
                 distanceUnit = data.getStringExtra("Distance Unit");
                 bearingUnit = data.getStringExtra("Bearing Unit");
-                unitSetter();
+                if(latitude_p1.length() != 0 || longitude_p1.length() != 0 ||
+                        latitude_p2.length() != 0|| longitude_p2.length() != 0) {
+                    unitSetter();
+                } else {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(latitude_p1.getWindowToken(), 0);
+                    Toast.makeText(MainActivity.this,R.string.cannotSave,Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
+        } else if (resultCode == HISTORY_RESULT) {
+            String[] vals = data.getStringArrayExtra("item");
+            latitude_p1.setText(vals[0]);
+            longitude_p1.setText(vals[1]);
+            latitude_p2.setText(vals[2]);
+            longitude_p2.setText(vals[3]);
+            unitSetter(); // code that updates the answers.
         }
     }
 
